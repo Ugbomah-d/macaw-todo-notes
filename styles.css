@@ -132,7 +132,8 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 .todo input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); flex: none; cursor: pointer; }
 .todo-text { flex: 1; min-width: 0; overflow-wrap: anywhere; cursor: text; }
 .todo.done .todo-text { text-decoration: line-through; color: var(--muted); }
-.todo-edit { flex: 1; }
+/* Same height as a normal row so rows below do not shift when an edit ends. */
+.todo .todo-edit { flex: 1; padding: 1px 8px; }
 .actions { display: flex; gap: 2px; flex: none; }
 
 .panel-footer {

@@ -20,9 +20,13 @@ const els = {
   noteEmpty: $('note-empty'), noteList: $('note-list'),
 };
 
-function commit(next) {
+function save(next) {
   state = next;
   els.warning.hidden = store.saveState(storage, state);
+}
+
+function commit(next) {
+  save(next);
   render();
 }
 
@@ -48,16 +52,22 @@ function startEditTodo(id) {
   render();
 }
 
-function todoEditor(todo) {
+// Finishing an edit swaps only this row, so a click that caused the blur
+// still lands on its (untouched) target button.
+function todoEditor(todo, li) {
   const input = el('input', { type: 'text', className: 'todo-edit', value: todo.text, maxLength: 200 });
   input.setAttribute('aria-label', 'Edit task');
   let finished = false;
-  const finish = (save) => {
+  const finish = (keep) => {
     if (finished) return;
     finished = true;
     editingTodoId = null;
-    if (save) commit(store.editTodo(state, todo.id, input.value));
-    else render();
+    if (!li.isConnected) return;
+    if (keep) save(store.editTodo(state, todo.id, input.value));
+    const updated = state.todos.find(t => t.id === todo.id);
+    if (updated) li.replaceWith(todoItem(updated));
+    else li.remove();
+    renderSummary();
   };
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); finish(true); }
@@ -71,7 +81,7 @@ function todoEditor(todo) {
 function todoItem(todo) {
   const li = el('li', { className: todo.done ? 'todo done' : 'todo' });
   if (todo.id === editingTodoId) {
-    li.append(todoEditor(todo));
+    li.append(todoEditor(todo, li));
     return li;
   }
   const checkbox = el('input', { type: 'checkbox', checked: todo.done });
@@ -90,12 +100,17 @@ function todoItem(todo) {
 
 function renderTodos() {
   els.todoList.replaceChildren(...state.todos.map(todoItem));
+  renderSummary();
+}
+
+function renderSummary() {
   const count = state.todos.length;
   els.todoEmpty.hidden = count > 0;
   els.todoFooter.hidden = count === 0;
   const left = store.remainingCount(state);
   els.todoCount.textContent = `${left} ${left === 1 ? 'item' : 'items'} left`;
   els.clearCompleted.disabled = left === count;
+  els.reset.disabled = !hasData();
 }
 
 /* ---------- Notes ---------- */
@@ -147,7 +162,6 @@ function renderNotes() {
 function render() {
   renderTodos();
   renderNotes();
-  els.reset.disabled = !hasData();
 }
 
 els.todoForm.addEventListener('submit', (e) => {
