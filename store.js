@@ -88,10 +88,12 @@ export function sampleState(now = Date.now()) {
   };
 }
 
+// Valid Date range; larger values make Date formatting throw.
+const isTime = v => Number.isFinite(v) && Math.abs(v) <= 8.64e15;
 const isTodo = t => t && typeof t.id === 'string' && typeof t.text === 'string'
-  && typeof t.done === 'boolean' && typeof t.createdAt === 'number';
+  && typeof t.done === 'boolean' && isTime(t.createdAt);
 const isNote = n => n && typeof n.id === 'string' && typeof n.title === 'string'
-  && typeof n.body === 'string' && typeof n.updatedAt === 'number';
+  && typeof n.body === 'string' && isTime(n.updatedAt);
 
 export function loadState(storage) {
   try {

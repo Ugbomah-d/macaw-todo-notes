@@ -154,3 +154,13 @@ test('loadState and saveState never throw when storage fails or is null', () => 
   assert.equal(s.saveState(broken, s.emptyState()), false);
   assert.equal(s.saveState(null, s.emptyState()), false);
 });
+
+test('loadState drops items with non-finite or out-of-range timestamps', () => {
+  const raw = JSON.stringify({
+    todos: [{ id: 'a', text: 'ok', done: false, createdAt: 1 }, { id: 'b', text: 'bad', done: false, createdAt: 1e20 }],
+    notes: [{ id: 'n', title: 't', body: '', updatedAt: 1 }, { id: 'm', title: 'bad', body: '', updatedAt: 1e20 }],
+  });
+  const st = s.loadState(fakeStorage({ [s.STORAGE_KEY]: raw }));
+  assert.deepEqual(st.todos.map(t => t.id), ['a']);
+  assert.deepEqual(st.notes.map(n => n.id), ['n']);
+});
