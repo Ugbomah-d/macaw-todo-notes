@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Macaw To-do &amp; Notes</title>
+  <meta name="description" content="A simple to-do list with a notes section, built by Team Macaw.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦜</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <p class="team">Team Macaw</p>
+      <h1>To-do &amp; Notes</h1>
+    </div>
+    <div class="toolbar">
+      <button id="load-sample" type="button" class="btn">Load sample data</button>
+      <button id="reset" type="button" class="btn ghost">Reset to empty</button>
+    </div>
+  </header>
+
+  <p id="storage-warning" class="warning" role="status" hidden>
+    Your browser is blocking storage, so changes will be lost when you close this page.
+  </p>
+
+  <main class="layout">
+    <section class="panel" aria-labelledby="todos-heading">
+      <h2 id="todos-heading">To-dos</h2>
+      <form id="todo-form" class="row-form" autocomplete="off">
+        <label for="todo-input" class="sr-only">New task</label>
+        <input id="todo-input" type="text" placeholder="What needs doing?" maxlength="200">
+        <button type="submit" class="btn primary">Add</button>
+      </form>
+      <p id="todo-empty" class="empty">No tasks yet. Add one above, or click <strong>Load sample data</strong>.</p>
+      <ul id="todo-list" class="todo-list"></ul>
+      <footer id="todo-footer" class="panel-footer" hidden>
+        <span id="todo-count"></span>
+        <button id="clear-completed" type="button" class="link-btn">Clear completed</button>
+      </footer>
+    </section>
+
+    <section class="panel" aria-labelledby="notes-heading">
+      <h2 id="notes-heading">Notes</h2>
+      <form id="note-form" class="note-form" autocomplete="off">
+        <label for="note-title" class="sr-only">Note title</label>
+        <input id="note-title" type="text" placeholder="Title" maxlength="100">
+        <label for="note-body" class="sr-only">Note</label>
+        <textarea id="note-body" rows="4" placeholder="Write a note…" maxlength="2000"></textarea>
+        <div class="form-actions">
+          <button id="note-cancel" type="button" class="btn ghost" hidden>Cancel</button>
+          <button id="note-submit" type="submit" class="btn primary">Add note</button>
+        </div>
+      </form>
+      <p id="note-empty" class="empty">No notes yet. Write one above, or click <strong>Load sample data</strong>.</p>
+      <ul id="note-list" class="note-list"></ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">Built by Team Macaw · Your data stays in this browser.</footer>
+</body>
+</html>
