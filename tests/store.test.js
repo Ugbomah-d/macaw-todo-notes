@@ -72,3 +72,47 @@ test('clearCompleted and remainingCount', () => {
   assert.deepEqual(st.todos.map(t => t.text), ['a', 'c']);
   assert.equal(s.remainingCount(st), 2);
 });
+
+test('addNote prepends a note; missing title becomes Untitled', () => {
+  let st = s.addNote(s.emptyState(), ' First ', ' body ', 5);
+  st = s.addNote(st, '', 'only body', 6);
+  assert.equal(st.notes.length, 2);
+  assert.equal(st.notes[0].title, 'Untitled');
+  assert.equal(st.notes[0].body, 'only body');
+  assert.equal(st.notes[1].title, 'First');
+  assert.equal(st.notes[1].body, 'body');
+  assert.equal(st.notes[1].updatedAt, 5);
+});
+
+test('addNote ignores a note with empty title and body', () => {
+  const st = s.emptyState();
+  assert.equal(s.addNote(st, '  ', '\n '), st);
+});
+
+test('editNote updates fields and updatedAt', () => {
+  let st = s.addNote(s.emptyState(), 'a', 'b', 1);
+  const id = st.notes[0].id;
+  st = s.editNote(st, id, 'A', 'B', 9);
+  assert.deepEqual({ ...st.notes[0], id: 'x' }, { id: 'x', title: 'A', body: 'B', updatedAt: 9 });
+});
+
+test('editNote with both fields empty leaves state unchanged', () => {
+  const st = s.addNote(s.emptyState(), 'a', 'b', 1);
+  assert.equal(s.editNote(st, st.notes[0].id, ' ', ''), st);
+});
+
+test('deleteNote removes the matching note', () => {
+  let st = s.addNote(s.addNote(s.emptyState(), 'a', ''), 'b', '');
+  st = s.deleteNote(st, st.notes[0].id);
+  assert.deepEqual(st.notes.map(n => n.title), ['a']);
+});
+
+test('sampleState has 6 todos (some done) and 3 notes with unique ids', () => {
+  const st = s.sampleState(1000);
+  assert.equal(st.todos.length, 6);
+  assert.equal(st.notes.length, 3);
+  assert.ok(st.todos.some(t => t.done));
+  assert.ok(st.todos.some(t => !t.done));
+  const ids = [...st.todos, ...st.notes].map(x => x.id);
+  assert.equal(new Set(ids).size, ids.length);
+});

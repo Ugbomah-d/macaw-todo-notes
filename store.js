@@ -42,3 +42,48 @@ export function clearCompleted(state) {
 export function remainingCount(state) {
   return state.todos.filter(t => !t.done).length;
 }
+
+export function addNote(state, title, body, now = Date.now()) {
+  const t = clean(title);
+  const b = clean(body);
+  if (!t && !b) return state;
+  const note = { id: makeId(), title: t || 'Untitled', body: b, updatedAt: now };
+  return { ...state, notes: [note, ...state.notes] };
+}
+
+export function editNote(state, id, title, body, now = Date.now()) {
+  const t = clean(title);
+  const b = clean(body);
+  if (!t && !b) return state;
+  return {
+    ...state,
+    notes: state.notes.map(n => (n.id === id ? { ...n, title: t || 'Untitled', body: b, updatedAt: now } : n)),
+  };
+}
+
+export function deleteNote(state, id) {
+  return { ...state, notes: state.notes.filter(n => n.id !== id) };
+}
+
+const SAMPLE_TODOS = [
+  ['Draft the project README', true],
+  ['Turn off Vercel Deployment Protection', true],
+  ['Add team name to the submission', false],
+  ['Test the app in an incognito window', false],
+  ['Upload agents.md', false],
+  ['Celebrate with the team 🎉', false],
+];
+
+const SAMPLE_NOTES = [
+  ['Standup — Monday', 'Everyone is on track.\nBlocker: waiting on design review for the notes layout.'],
+  ['Ideas for v2', '• Due dates\n• Tags and filters\n• Sync across devices'],
+  ['Demo script', '1. Open the app\n2. Click "Load sample data"\n3. Tick off a task\n4. Edit a note\n5. Reset to empty'],
+];
+
+export function sampleState(now = Date.now()) {
+  const hour = 60 * 60 * 1000;
+  return {
+    todos: SAMPLE_TODOS.map(([text, done], i) => ({ id: makeId(), text, done, createdAt: now - (6 - i) * hour })),
+    notes: SAMPLE_NOTES.map(([title, body], i) => ({ id: makeId(), title, body, updatedAt: now - i * 26 * hour })),
+  };
+}
