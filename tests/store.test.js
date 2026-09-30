@@ -116,3 +116,41 @@ test('sampleState has 6 todos (some done) and 3 notes with unique ids', () => {
   const ids = [...st.todos, ...st.notes].map(x => x.id);
   assert.equal(new Set(ids).size, ids.length);
 });
+
+function fakeStorage(initial = {}) {
+  const data = { ...initial };
+  return { data, getItem: k => (k in data ? data[k] : null), setItem: (k, v) => { data[k] = String(v); } };
+}
+
+test('saveState then loadState round-trips', () => {
+  const store = fakeStorage();
+  const st = s.addNote(s.addTodo(s.emptyState(), 'a'), 't', 'b');
+  assert.equal(s.saveState(store, st), true);
+  assert.deepEqual(s.loadState(store), st);
+});
+
+test('loadState returns empty for missing, corrupt, or wrong-shape data', () => {
+  assert.deepEqual(s.loadState(fakeStorage()), s.emptyState());
+  assert.deepEqual(s.loadState(fakeStorage({ [s.STORAGE_KEY]: '{not json' })), s.emptyState());
+  assert.deepEqual(s.loadState(fakeStorage({ [s.STORAGE_KEY]: '42' })), s.emptyState());
+  assert.deepEqual(s.loadState(fakeStorage({ [s.STORAGE_KEY]: 'null' })), s.emptyState());
+  assert.deepEqual(s.loadState(fakeStorage({ [s.STORAGE_KEY]: '{"todos":"x"}' })), s.emptyState());
+});
+
+test('loadState drops invalid items but keeps valid ones', () => {
+  const raw = JSON.stringify({
+    todos: [{ id: 'a', text: 'ok', done: false, createdAt: 1 }, { id: 'b' }, null],
+    notes: [{ id: 'n', title: 't', body: 'b', updatedAt: 1 }, { title: 5 }],
+  });
+  const st = s.loadState(fakeStorage({ [s.STORAGE_KEY]: raw }));
+  assert.deepEqual(st.todos.map(t => t.id), ['a']);
+  assert.deepEqual(st.notes.map(n => n.id), ['n']);
+});
+
+test('loadState and saveState never throw when storage fails or is null', () => {
+  const broken = { getItem() { throw new Error('denied'); }, setItem() { throw new Error('quota'); } };
+  assert.deepEqual(s.loadState(broken), s.emptyState());
+  assert.deepEqual(s.loadState(null), s.emptyState());
+  assert.equal(s.saveState(broken, s.emptyState()), false);
+  assert.equal(s.saveState(null, s.emptyState()), false);
+});

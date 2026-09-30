@@ -87,3 +87,29 @@ export function sampleState(now = Date.now()) {
     notes: SAMPLE_NOTES.map(([title, body], i) => ({ id: makeId(), title, body, updatedAt: now - i * 26 * hour })),
   };
 }
+
+const isTodo = t => t && typeof t.id === 'string' && typeof t.text === 'string'
+  && typeof t.done === 'boolean' && typeof t.createdAt === 'number';
+const isNote = n => n && typeof n.id === 'string' && typeof n.title === 'string'
+  && typeof n.body === 'string' && typeof n.updatedAt === 'number';
+
+export function loadState(storage) {
+  try {
+    const raw = storage.getItem(STORAGE_KEY);
+    if (!raw) return emptyState();
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.todos) || !Array.isArray(data.notes)) return emptyState();
+    return { todos: data.todos.filter(isTodo), notes: data.notes.filter(isNote) };
+  } catch {
+    return emptyState();
+  }
+}
+
+export function saveState(storage, state) {
+  try {
+    storage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
+  } catch {
+    return false;
+  }
+}
